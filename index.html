@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Party Mix DJ Studio Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap');
+    
+    * {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #06070b;
+      color: #e2e8f0;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Custom neon glow shadows */
+    .glow-cyan {
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+    .glow-pink {
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.2);
+    }
+    .glow-purple {
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.2);
+    }
+    .glow-red {
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+    }
+
+    /* Key Pad Trigger Animation */
+    .pad-btn {
+      transition: transform 0.05s ease-out, filter 0.05s ease-out;
+      transform: scale(1);
+    }
+    .pad-btn:active, .pad-btn.active {
+      transform: scale(0.92);
+      filter: brightness(1.5);
+      box-shadow: 0 0 20px currentColor, inset 0 0 12px #fff;
+    }
+
+    /* Vinyl record animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinning {
+      animation: spin 2.5s linear infinite;
+    }
+
+    /* Custom Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #1e293b;
+      border-radius: 8px;
+      height: 8px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-gradient-to-b from-gray-950 via-slate-950 to-black text-slate-100 pb-12 sm:pb-0">
+
+  <header class="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md px-4 py-3 sticky top-0 z-50 flex flex-wrap justify-between items-center gap-2">
+    <div class="flex items-center gap-2.5">
+      <div class="p-2 bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-500 rounded-xl text-slate-950 font-black text-lg shadow-lg">
+        <i class="fa-solid fa-compact-disc fa-spin"></i>
+      </div>
+      <div>
+        <h1 class="font-orbitron font-extrabold text-lg sm:text-xl bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-400 bg-clip-text text-transparent tracking-wider">
+          PARTY MIX PRO
+        </h1>
+        <p class="text-[10px] sm:text-xs text-slate-400">Mobile Mobile & Desktop DJ Rig</p>
+      </div>
+    </div>
+
+    <!-- Top Action Toolbar -->
+    <div class="flex items-center gap-2">
+      <button id="startAudioBtn" class="px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2">
+        <i class="fa-solid fa-power-off"></i>
+        <span id="startAudioText">TAP TO START</span>
+      </button>
+
+      <!-- Record Set Master Toggle -->
+      <button id="recSetBtn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 font-bold text-xs rounded-xl border border-red-500/30 transition-all flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500" id="recDot"></span>
+        <span id="recBtnText">REC SET</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col gap-4">
+
+    <div class="relative bg-slate-900/80 border border-slate-800 rounded-2xl p-3 sm:p-4 overflow-hidden shadow-2xl backdrop-blur-md">
+      <div id="ambientGlow" class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 opacity-40 transition-opacity duration-300 pointer-events-none"></div>
+      
+      <div class="flex flex-wrap justify-between items-center mb-2 gap-2 px-1">
+        <div class="flex items-center gap-2 text-[11px] font-orbitron text-cyan-400 tracking-widest">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          MASTER VISUALIZER
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="bpmDisplay" class="font-orbitron text-xs font-bold text-pink-400">
+            BPM: <span id="bpmVal">128</span>
+          </span>
+          <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+            <i class="fa-solid fa-volume-high text-cyan-400 text-xs"></i>
+            <input id="masterVolume" type="range" min="0" max="1" step="0.01" value="0.8" class="w-16 sm:w-24 accent-cyan-400 cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <canvas id="visualizerCanvas" class="w-full h-16 sm:h-20 rounded-xl bg-slate-950 border border-slate-800/80"></canvas>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+      
+      <!-- DECK A -->
+      <div class="lg:col-span-5 bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-4 flex flex-col justify-between glow-cyan relative overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+          <span class="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 font-orbitron text-[10px] font-bold rounded-lg border border-cyan-500/30">
+            DECK A
+          </span>
+          <!-- Track Selector -->
+          <select id="genreSelectA" class="bg-slate-950 border border-cyan-500/40 text-cyan-300 text-xs rounded-lg px-2 py-1 outline-none font-semibold">
+            <option value="edm">Genre: EDM Anthem</option>
+            <option value="house">Genre: Deep House</option>
+            <option value="hiphop">Genre: Hip-Hop Trap</option>
+            <option value="synthwave">Genre: Synthwave</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3 mb-3">
+          <div id="vinylA" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950 border-4 border-slate-800 flex items-center justify-center relative shadow-inner flex-shrink-0">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-cyan-500/30 border-2 border-cyan-400 flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-white"></div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden">
+            <h2 id="deckATitle" class="font-orbitron font-bold text-cyan-300 text-sm sm:text-base truncate">EDM Party Anthem</h2>
+            <p id="deckADesc" class="text-[11px] text-slate-400">128 BPM • Synth Groove Loop</p>
+            <div class="flex gap-2 mt-2">
+              <button id="playDeckA" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-play text-[10px]"></i> PLAY
+              </button>
+              <button id="loopDeckA" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 font-bold text-xs rounded-lg border border-cyan-500/40 transition-colors">
+                LOOP ON
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>PITCH / SPEED</span>
+            <span id="speedValA" class="font-mono text-cyan-400 text-xs">1.0x</span>
+          </div>
+          <input id="pitchA" type="range" min="0.8" max="1.2" step="0.01" value="1.0" class="w-full accent-cyan-400 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- CENTER CROSSFADER & BEAT SEQUENCER -->
+      <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-between gap-3 shadow-xl">
+        <div class="text-center w-full">
+          <span class="font-orbitron text-[10px] tracking-widest text-slate-400 uppercase">CROSSFADER</span>
+          <div class="flex justify-between text-xs font-bold font-orbitron mt-1">
+            <span class="text-cyan-400">DECK A</span>
+            <span class="text-pink-400">DECK B</span>
+          </div>
+          <input id="crossfader" type="range" min="0" max="1" step="0.01" value="0.5" class="w-full accent-purple-500 cursor-pointer h-3 bg-slate-950 rounded-lg mt-1">
+        </div>
+
+        <div class="w-full border-t border-slate-800/80 pt-3 flex flex-col gap-2">
+          <!-- Auto Beat Loop Toggle -->
+          <button id="beatGenBtn" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-orbitron text-xs font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-drum"></i>
+            <span>AUTO BEAT LOOP</span>
+          </button>
+
+          <!-- Phrase / Performance Loop Station -->
+          <button id="loopRecBtn" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-orbitron text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span id="loopRecText">REC 4-BAR LOOP</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DECK B -->
+      <div class="lg:col-span-5 bg-slate-900/80 border border-pink-500/30 rounded-2xl p-4 flex flex-col justify-between glow-pink relative overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+          <span class="px-2.5 py-0.5 bg-pink-500/20 text-pink-300 font-orbitron text-[10px] font-bold rounded-lg border border-pink-500/30">
+            DECK B
+          </span>
+          <!-- Track Selector -->
+          <select id="genreSelectB" class="bg-slate-950 border border-pink-500/40 text-pink-300 text-xs rounded-lg px-2 py-1 outline-none font-semibold">
+            <option value="house">Genre: Deep House</option>
+            <option value="edm">Genre: EDM Anthem</option>
+            <option value="hiphop">Genre: Hip-Hop Trap</option>
+            <option value="synthwave">Genre: Synthwave</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3 mb-3">
+          <div id="vinylB" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950 border-4 border-slate-800 flex items-center justify-center relative shadow-inner flex-shrink-0">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-500/30 border-2 border-pink-400 flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-white"></div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden">
+            <h2 id="deckBTitle" class="font-orbitron font-bold text-pink-300 text-sm sm:text-base truncate">Deep House Bass</h2>
+            <p id="deckBDesc" class="text-[11px] text-slate-400">128 BPM • Club Bass Synth</p>
+            <div class="flex gap-2 mt-2">
+              <button id="playDeckB" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-play text-[10px]"></i> PLAY
+              </button>
+              <button id="loopDeckB" class="px-3 py-1.5 bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 font-bold text-xs rounded-lg border border-pink-500/40 transition-colors">
+                LOOP ON
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>PITCH / SPEED</span>
+            <span id="speedValB" class="font-mono text-pink-400 text-xs">1.0x</span>
+          </div>
+          <input id="pitchB" type="range" min="0.8" max="1.2" step="0.01" value="1.0" class="w-full accent-pink-400 cursor-pointer">
+        </div>
+      </div>
+
+    </div>
+
+    <div id="recordingSection" class="hidden bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-4 shadow-xl">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-orbitron font-bold text-emerald-400 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-compact-disc"></i> RECORDED DJ PERFORMANCE SETS
+        </h3>
+        <span class="text-[10px] text-slate-400 bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800">
+          Saved locally in browser memory
+        </span>
+      </div>
+
+      <div id="recordingsList" class="space-y-2 max-h-40 overflow-y-auto">
+        <!-- Dynamic recorded audio clips inserted here -->
+      </div>
+    </div>
+
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-md">
+      <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+        <h3 class="font-orbitron font-bold text-sm text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-keyboard text-cyan-400"></i> PERFORMANCE SOUND PADS
+        </h3>
+        <span class="text-[10px] text-slate-400 bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800">
+          Tap pads on touchscreens or use physical keyboard keys
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+        
+        <!-- DRUMS -->
+        <div class="col-span-2 sm:col-span-4 text-[11px] font-orbitron font-semibold text-cyan-400 border-b border-slate-800 pb-1 mt-1">
+          PERCUSSION & DRUMS
+        </div>
+
+        <button data-key="Q" class="pad-btn bg-slate-950 border-2 border-cyan-500/50 active:border-cyan-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-cyan-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">Q</span>
+          <span class="text-xs font-bold text-slate-200">KICK DRUM</span>
+        </button>
+
+        <button data-key="W" class="pad-btn bg-slate-950 border-2 border-cyan-500/50 active:border-cyan-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-cyan-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">W</span>
+          <span class="text-xs font-bold text-slate-200">SNARE HIT</span>
+        </button>
+
+        <button data-key="E" class="pad-btn bg-slate-950 border-2 border-cyan-500/50 active:border-cyan-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-cyan-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">E</span>
+          <span class="text-xs font-bold text-slate-200">HI-HAT</span>
+        </button>
+
+        <button data-key="R" class="pad-btn bg-slate-950 border-2 border-cyan-500/50 active:border-cyan-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-cyan-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">R</span>
+          <span class="text-xs font-bold text-slate-200">HAND CLAP</span>
+        </button>
+
+        <!-- DJ FX -->
+        <div class="col-span-2 sm:col-span-4 text-[11px] font-orbitron font-semibold text-pink-400 border-b border-slate-800 pb-1 mt-2">
+          DJ IMPACTS & FX
+        </div>
+
+        <button data-key="A" class="pad-btn bg-slate-950 border-2 border-pink-500/50 active:border-pink-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-pink-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">A</span>
+          <span class="text-xs font-bold text-slate-200">SUB BASS</span>
+        </button>
+
+        <button data-key="S" class="pad-btn bg-slate-950 border-2 border-pink-500/50 active:border-pink-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-pink-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">S</span>
+          <span class="text-xs font-bold text-slate-200">AIRHORN</span>
+        </button>
+
+        <button data-key="D" class="pad-btn bg-slate-950 border-2 border-pink-500/50 active:border-pink-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-pink-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">D</span>
+          <span class="text-xs font-bold text-slate-200">LASER ZAP</span>
+        </button>
+
+        <button data-key="F" class="pad-btn bg-slate-950 border-2 border-pink-500/50 active:border-pink-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-pink-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">F</span>
+          <span class="text-xs font-bold text-slate-200">SCRATCH</span>
+        </button>
+
+        <!-- SYNTH MELODY -->
+        <div class="col-span-2 sm:col-span-4 text-[11px] font-orbitron font-semibold text-purple-400 border-b border-slate-800 pb-1 mt-2">
+          SYNTH CHORDS & LEADS
+        </div>
+
+        <button data-key="Z" class="pad-btn bg-slate-950 border-2 border-purple-500/50 active:border-purple-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-purple-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">Z</span>
+          <span class="text-xs font-bold text-slate-200">SYNTH C4</span>
+        </button>
+
+        <button data-key="X" class="pad-btn bg-slate-950 border-2 border-purple-500/50 active:border-purple-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-purple-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">X</span>
+          <span class="text-xs font-bold text-slate-200">SYNTH E4</span>
+        </button>
+
+        <button data-key="C" class="pad-btn bg-slate-950 border-2 border-purple-500/50 active:border-purple-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-purple-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">C</span>
+          <span class="text-xs font-bold text-slate-200">SYNTH G4</span>
+        </button>
+
+        <button data-key="V" class="pad-btn bg-slate-950 border-2 border-purple-500/50 active:border-purple-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-purple-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">V</span>
+          <span class="text-xs font-bold text-slate-200">SYNTH B4</span>
+        </button>
+
+        <!-- VOCAL SHOUTS -->
+        <div class="col-span-2 sm:col-span-4 text-[11px] font-orbitron font-semibold text-emerald-400 border-b border-slate-800 pb-1 mt-2">
+          VOCAL SHOUTOUTS
+        </div>
+
+        <button data-key="1" class="pad-btn bg-slate-950 border-2 border-emerald-500/50 active:border-emerald-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-emerald-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">1</span>
+          <span class="text-xs font-bold text-slate-200">"YEAH!"</span>
+        </button>
+
+        <button data-key="2" class="pad-btn bg-slate-950 border-2 border-emerald-500/50 active:border-emerald-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-emerald-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">2</span>
+          <span class="text-xs font-bold text-slate-200">"DROP IT!"</span>
+        </button>
+
+        <button data-key="3" class="pad-btn bg-slate-950 border-2 border-emerald-500/50 active:border-emerald-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-emerald-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">3</span>
+          <span class="text-xs font-bold text-slate-200">"3-2-1 GO!"</span>
+        </button>
+
+        <button data-key="4" class="pad-btn bg-slate-950 border-2 border-emerald-500/50 active:border-emerald-400 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-emerald-400 shadow-md">
+          <span class="font-orbitron font-black text-xl">4</span>
+          <span class="text-xs font-bold text-slate-200">"LETS GO!"</span>
+        </button>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-3 px-4 text-center text-[11px] text-slate-500">
+    <p>Client-side DJ Studio Engine • Audio & Recordings stay local on your device • Ready for GitHub Pages hosting</p>
+  </footer>
+
+  <script>
+    // Audio Context & Nodes
+    let audioCtx = null;
+    let masterGain = null;
+    let analyser = null;
+    let destStream = null;
+
+    // Deck Node Controllers
+    let deckAGain = null;
+    let deckBGain = null;
+    let deckASource = null;
+    let deckBSource = null;
+
+    let isDeckAPlaying = false;
+    let isDeckBPlaying = false;
+    let deckALoop = true;
+    let deckBLoop = true;
+
+    // Beat Sequencer State
+    let isAutoBeatRunning = false;
+    let autoBeatInterval = null;
+    let beatStep = 0;
+
+    // Live MediaRecorder State
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingSet = false;
+
+    // Loop Phrase Overdubbing
+    let isLoopRecording = false;
+    let recordedLoopEvents = [];
+    let loopStartTime = 0;
+    let loopDuration = 3750; // 4 bars at 128 BPM
+    let activeLoopIntervals = [];
+
+    // Genre Sound Profiles (Synthesized tracks for zero external dependency)
+    const genreTracks = {
+      edm: { name: "EDM Anthem Groove", bpm: 128, desc: "128 BPM • Synth Groove Loop", freqA: 130.81, freqB: 196.00 },
+      house: { name: "Deep House Bass", bpm: 124, desc: "124 BPM • Club Bass Synth", freqA: 110.00, freqB: 164.81 },
+      hiphop: { name: "Hip-Hop Trap Beat", bpm: 140, desc: "140 BPM • 808 Sub Loop", freqA: 65.41, freqB: 98.00 },
+      synthwave: { name: "Synthwave Retro 80s", bpm: 115, desc: "115 BPM • Retro Wave Loop", freqA: 146.83, freqB: 220.00 }
+    };
+
+    // Initialize Web Audio Stack
+    function initAudio() {
+      if (audioCtx) return;
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      // Master Output Node
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.8;
+
+      // Visualizer Analyser Node
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+
+      // Deck Channels
+      deckAGain = audioCtx.createGain();
+      deckBGain = audioCtx.createGain();
+
+      // Initial Equalizer Crossfader Split
+      deckAGain.gain.value = 0.5;
+      deckBGain.gain.value = 0.5;
+
+      deckAGain.connect(masterGain);
+      deckBGain.connect(masterGain);
+
+      masterGain.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      // MediaRecorder Audio Stream Setup
+      destStream = audioCtx.createMediaStreamDestination();
+      masterGain.connect(destStream);
+
+      startVisualizer();
+
+      document.getElementById('startAudioBtn').classList.remove('from-cyan-500', 'to-blue-600');
+      document.getElementById('startAudioBtn').classList.add('from-emerald-500', 'to-teal-600');
+      document.getElementById('startAudioText').innerText = "AUDIO READY";
+    }
+
+    // Synthesizer Sound Generator
+    function triggerSound(key) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const k = key.toUpperCase();
+      const now = audioCtx.currentTime;
+
+      // Record keypress event if loop recorder active
+      if (isLoopRecording) {
+        const timeOffset = (Date.now() - loopStartTime) % loopDuration;
+        recordedLoopEvents.push({ key: k, offset: timeOffset });
+      }
+
+      switch(k) {
+        case 'Q': // Kick Drum
+          const kickOsc = audioCtx.createOscillator();
+          const kickGain = audioCtx.createGain();
+          kickOsc.frequency.setValueAtTime(150, now);
+          kickOsc.frequency.exponentialRampToValueAtTime(0.01, now + 0.25);
+          kickGain.gain.setValueAtTime(1.0, now);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          kickOsc.connect(kickGain);
+          kickGain.connect(masterGain);
+          kickOsc.start(now);
+          kickOsc.stop(now + 0.25);
+          break;
+
+        case 'W': // Snare Drum
+          const snareNoise = audioCtx.createBufferSource();
+          const bufferSize = audioCtx.sampleRate * 0.2;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+          snareNoise.buffer = buffer;
+
+          const snareFilter = audioCtx.createBiquadFilter();
+          snareFilter.type = 'highpass';
+          snareFilter.frequency.value = 800;
+
+          const snareGain = audioCtx.createGain();
+          snareGain.gain.setValueAtTime(0.7, now);
+          snareGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+          snareNoise.connect(snareFilter);
+          snareFilter.connect(snareGain);
+          snareGain.connect(masterGain);
+          snareNoise.start(now);
+          break;
+
+        case 'E': // Hi-Hat
+          const hatBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
+          const hatData = hatBuffer.getChannelData(0);
+          for (let i = 0; i < hatBuffer.length; i++) hatData[i] = Math.random() * 2 - 1;
+
+          const hatSource = audioCtx.createBufferSource();
+          hatSource.buffer = hatBuffer;
+
+          const hatFilter = audioCtx.createBiquadFilter();
+          hatFilter.type = 'highpass';
+          hatFilter.frequency.value = 7000;
+
+          const hatGain = audioCtx.createGain();
+          hatGain.gain.setValueAtTime(0.4, now);
+          hatGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+
+          hatSource.connect(hatFilter);
+          hatFilter.connect(hatGain);
+          hatGain.connect(masterGain);
+          hatSource.start(now);
+          break;
+
+        case 'R': // Hand Clap
+          for (let i = 0; i < 3; i++) {
+            const clapOsc = audioCtx.createOscillator();
+            const clapGain = audioCtx.createGain();
+            clapOsc.type = 'triangle';
+            clapOsc.frequency.setValueAtTime(600 + Math.random()*200, now + i*0.015);
+            clapGain.gain.setValueAtTime(0.4, now + i*0.015);
+            clapGain.gain.exponentialRampToValueAtTime(0.01, now + i*0.015 + 0.1);
+            clapOsc.connect(clapGain);
+            clapGain.connect(masterGain);
+            clapOsc.start(now + i*0.015);
+            clapOsc.stop(now + i*0.015 + 0.1);
+          }
+          break;
+
+        case 'A': // Sub Bass Drop
+          const bassOsc = audioCtx.createOscillator();
+          const bassGain = audioCtx.createGain();
+          bassOsc.type = 'sine';
+          bassOsc.frequency.setValueAtTime(220, now);
+          bassOsc.frequency.exponentialRampToValueAtTime(35, now + 1.2);
+          bassGain.gain.setValueAtTime(0.9, now);
+          bassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          bassOsc.connect(bassGain);
+          bassGain.connect(masterGain);
+          bassOsc.start(now);
+          bassOsc.stop(now + 1.2);
+          break;
+
+        case 'S': // Airhorn
+          [370, 466, 554].forEach((freq) => {
+            const horn = audioCtx.createOscillator();
+            const hornGain = audioCtx.createGain();
+            horn.type = 'sawtooth';
+            horn.frequency.setValueAtTime(freq, now);
+            hornGain.gain.setValueAtTime(0.2, now);
+            hornGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+            horn.connect(hornGain);
+            hornGain.connect(masterGain);
+            horn.start(now);
+            horn.stop(now + 0.45);
+          });
+          break;
+
+        case 'D': // Laser Zap
+          const laser = audioCtx.createOscillator();
+          const laserGain = audioCtx.createGain();
+          laser.type = 'sawtooth';
+          laser.frequency.setValueAtTime(1200, now);
+          laser.frequency.exponentialRampToValueAtTime(120, now + 0.2);
+          laserGain.gain.setValueAtTime(0.4, now);
+          laserGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          laser.connect(laserGain);
+          laserGain.connect(masterGain);
+          laser.start(now);
+          laser.stop(now + 0.2);
+          break;
+
+        case 'F': // Scratch
+          const scratch = audioCtx.createOscillator();
+          const scratchGain = audioCtx.createGain();
+          scratch.type = 'sine';
+          scratch.frequency.setValueAtTime(200, now);
+          scratch.frequency.linearRampToValueAtTime(900, now + 0.08);
+          scratch.frequency.linearRampToValueAtTime(150, now + 0.18);
+          scratchGain.gain.setValueAtTime(0.5, now);
+          scratchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          scratch.connect(scratchGain);
+          scratchGain.connect(masterGain);
+          scratch.start(now);
+          scratch.stop(now + 0.18);
+          break;
+
+        case 'Z': playSynthNote(261.63); break; // C4
+        case 'X': playSynthNote(329.63); break; // E4
+        case 'C': playSynthNote(392.00); break; // G4
+        case 'V': playSynthNote(493.88); break; // B4
+
+        case '1': playVocalChime(523.25, 659.25); break;
+        case '2': playVocalChime(392.00, 293.66); break;
+        case '3': playVocalChime(440.00, 880.00); break;
+        case '4': playVocalChime(659.25, 987.77); break;
+      }
+
+      pulseAmbientGlow();
+    }
+
+    function playSynthNote(freq) {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, now);
+      filter.frequency.exponentialRampToValueAtTime(300, now + 0.4);
+
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + 0.4);
+    }
+
+    function playVocalChime(f1, f2) {
+      const now = audioCtx.currentTime;
+      [f1, f2].forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(f, now + idx * 0.1);
+        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.2);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.2);
+      });
+    }
+
+    // Deck Synthesized Track Player
+    function toggleDeck(deck) {
+      if (!audioCtx) initAudio();
+
+      if (deck === 'A') {
+        isDeckAPlaying = !isDeckAPlaying;
+        document.getElementById('vinylA').classList.toggle('spinning', isDeckAPlaying);
+        document.getElementById('playDeckA').classList.toggle('bg-emerald-400', isDeckAPlaying);
+        document.getElementById('playDeckA').innerHTML = isDeckAPlaying 
+          ? `<i class="fa-solid fa-pause text-[10px]"></i> PAUSE` 
+          : `<i class="fa-solid fa-play text-[10px]"></i> PLAY`;
+
+        if (isDeckAPlaying) {
+          const selectedKey = document.getElementById('genreSelectA').value;
+          deckASource = createDeckLoop(genreTracks[selectedKey].freqA, deckAGain);
+        } else if (deckASource) {
+          deckASource.stop();
+        }
+      } else {
+        isDeckBPlaying = !isDeckBPlaying;
+        document.getElementById('vinylB').classList.toggle('spinning', isDeckBPlaying);
+        document.getElementById('playDeckB').classList.toggle('bg-emerald-400', isDeckBPlaying);
+        document.getElementById('playDeckB').innerHTML = isDeckBPlaying 
+          ? `<i class="fa-solid fa-pause text-[10px]"></i> PAUSE` 
+          : `<i class="fa-solid fa-play text-[10px]"></i> PLAY`;
+
+        if (isDeckBPlaying) {
+          const selectedKey = document.getElementById('genreSelectB').value;
+          deckBSource = createDeckLoop(genreTracks[selectedKey].freqB, deckBGain);
+        } else if (deckBSource) {
+          deckBSource.stop();
+        }
+      }
+    }
+
+    function createDeckLoop(baseFreq, outputGainNode) {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(baseFreq, now);
+
+      gain.gain.setValueAtTime(0.3, now);
+
+      osc.connect(gain);
+      gain.connect(outputGainNode);
+
+      osc.start(now);
+      return osc;
+    }
+
+    // Auto Sequencer Loop Toggle
+    function toggleAutoBeat() {
+      if (!audioCtx) initAudio();
+      
+      const btn = document.getElementById('beatGenBtn');
+      isAutoBeatRunning = !isAutoBeatRunning;
+
+      if (isAutoBeatRunning) {
+        btn.classList.add('glow-purple', 'ring-2', 'ring-purple-400');
+        btn.querySelector('span').innerText = 'STOP BEAT LOOP';
+        
+        const intervalMs = (60 / 128 / 4) * 1000;
+        autoBeatInterval = setInterval(() => {
+          if (beatStep % 4 === 0) triggerSound('Q');
+          if (beatStep % 8 === 4) triggerSound('W');
+          if (beatStep % 2 === 0) triggerSound('E');
+          if (beatStep % 16 === 12) triggerSound('R');
+          beatStep = (beatStep + 1) % 16;
+        }, intervalMs);
+      } else {
+        btn.classList.remove('glow-purple', 'ring-2', 'ring-purple-400');
+        btn.querySelector('span').innerText = 'AUTO BEAT LOOP';
+        clearInterval(autoBeatInterval);
+        beatStep = 0;
+      }
+    }
+
+    // Phrase / Phrase Overdub Loop Recorder
+    function toggleLoopRecord() {
+      if (!audioCtx) initAudio();
+      const btn = document.getElementById('loopRecBtn');
+      const label = document.getElementById('loopRecText');
+
+      isLoopRecording = !isLoopRecording;
+
+      if (isLoopRecording) {
+        recordedLoopEvents = [];
+        loopStartTime = Date.now();
+        btn.classList.add('glow-red', 'bg-red-950', 'text-red-400', 'border-red-500');
+        label.innerText = 'RECORDING 4-BARS...';
+
+        setTimeout(() => {
+          if (isLoopRecording) {
+            isLoopRecording = false;
+            btn.classList.remove('glow-red', 'bg-red-950');
+            btn.classList.add('bg-emerald-950', 'text-emerald-300', 'border-emerald-400');
+            label.innerText = 'LOOP PLAYING (' + recordedLoopEvents.length + ' PADS)';
+            playPhraseLoop();
+          }
+        }, loopDuration);
+      } else {
+        clearPhraseLoop();
+        btn.classList.remove('bg-emerald-950', 'text-emerald-300', 'border-emerald-400');
+        label.innerText = 'REC 4-BAR LOOP';
+      }
+    }
+
+    function playPhraseLoop() {
+      clearPhraseLoop();
+      const loopCycle = () => {
+        recordedLoopEvents.forEach(evt => {
+          const timeoutId = setTimeout(() => {
+            triggerSound(evt.key);
+            const padBtn = document.querySelector(`.pad-btn[data-key="${evt.key}"]`);
+            if (padBtn) {
+              padBtn.classList.add('active');
+              setTimeout(() => padBtn.classList.remove('active'), 100);
+            }
+          }, evt.offset);
+          activeLoopIntervals.push(timeoutId);
+        });
+      };
+
+      loopCycle();
+      const masterLoopInterval = setInterval(loopCycle, loopDuration);
+      activeLoopIntervals.push(masterLoopInterval);
+    }
+
+    function clearPhraseLoop() {
+      activeLoopIntervals.forEach(id => clearTimeout(id));
+      activeLoopIntervals = [];
+    }
+
+    // Master DJ Set Recording (MediaRecorder API)
+    function toggleMasterRecording() {
+      if (!audioCtx) initAudio();
+
+      const btn = document.getElementById('recSetBtn');
+      const btnText = document.getElementById('recBtnText');
+      const recDot = document.getElementById('recDot');
+
+      if (!isRecordingSet) {
+        recordedChunks = [];
+        const options = { mimeType: 'audio/webm' };
+        
+        try {
+          mediaRecorder = new MediaRecorder(destStream.stream, options);
+        } catch (e) {
+          mediaRecorder = new MediaRecorder(destStream.stream);
+        }
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = saveRecordedSet;
+
+        mediaRecorder.start();
+        isRecordingSet = true;
+
+        btn.classList.add('bg-red-600', 'text-white', 'glow-red');
+        btnText.innerText = "STOP REC";
+        recDot.classList.add('animate-ping');
+      } else {
+        mediaRecorder.stop();
+        isRecordingSet = false;
+
+        btn.classList.remove('bg-red-600', 'text-white', 'glow-red');
+        btnText.innerText = "REC SET";
+        recDot.classList.remove('animate-ping');
+      }
+    }
+
+    function saveRecordedSet() {
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const audioUrl = URL.createObjectURL(blob);
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      const recordingSection = document.getElementById('recordingSection');
+      const recordingsList = document.getElementById('recordingsList');
+      recordingSection.classList.remove('hidden');
+
+      const recItem = document.createElement('div');
+      recItem.className = "flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-xs";
+      
+      recItem.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-music text-emerald-400"></i>
+          <span class="font-orbitron font-semibold text-slate-200">DJ Mix Set (${timestamp})</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <audio src="${audioUrl}" controls class="h-8 w-40 sm:w-52 accent-emerald-400"></audio>
+          <a href="${audioUrl}" download="DJ_Party_Mix_${Date.now()}.webm" class="p-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors flex items-center justify-center">
+            <i class="fa-solid fa-download"></i>
+          </a>
+          <button onclick="shareAudio('${audioUrl}')" class="p-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+        </div>
+      `;
+
+      recordingsList.prepend(recItem);
+    }
+
+    // Web Share API Integration
+    async function shareAudio(url) {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'My DJ Party Mix Set',
+            text: 'Check out my live DJ party set recorded on Party Mix DJ Studio!',
+            url: window.location.href
+          });
+        } catch (err) {
+          copyToClipboard(window.location.href);
+        }
+      } else {
+        copyToClipboard(window.location.href);
+      }
+    }
+
+    function copyToClipboard(text) {
+      const tempInput = document.createElement('input');
+      tempInput.value = text;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert("DJ Studio URL copied to clipboard! Share it with friends.");
+    }
+
+    // Dynamic Canvas Visualizer Render
+    function startVisualizer() {
+      const canvas = document.getElementById('visualizerCanvas');
+      const ctx = canvas.getContext('2d');
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      function draw() {
+        requestAnimationFrame(draw);
+        
+        if (canvas.width !== canvas.clientWidth) {
+          canvas.width = canvas.clientWidth;
+          canvas.height = canvas.clientHeight;
+        }
+
+        analyser.getByteFrequencyData(dataArray);
+
+        ctx.fillStyle = '#030712';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 1.8;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * canvas.height;
+
+          const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+          gradient.addColorStop(0, '#06b6d4');
+          gradient.addColorStop(0.5, '#a855f7');
+          gradient.addColorStop(1, '#ec4899');
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+
+          x += barWidth;
+        }
+      }
+      draw();
+    }
+
+    function pulseAmbientGlow() {
+      const glow = document.getElementById('ambientGlow');
+      glow.style.opacity = '1';
+      setTimeout(() => {
+        glow.style.opacity = '0.4';
+      }, 100);
+    }
+
+    // Attach Event Handlers
+    window.addEventListener('DOMContentLoaded', () => {
+      
+      document.getElementById('startAudioBtn').addEventListener('click', () => {
+        initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      });
+
+      document.getElementById('recSetBtn').addEventListener('click', toggleMasterRecording);
+      document.getElementById('beatGenBtn').addEventListener('click', toggleAutoBeat);
+      document.getElementById('loopRecBtn').addEventListener('click', toggleLoopRecord);
+
+      document.getElementById('playDeckA').addEventListener('click', () => toggleDeck('A'));
+      document.getElementById('playDeckB').addEventListener('click', () => toggleDeck('B'));
+
+      // Genre Selector Handlers
+      document.getElementById('genreSelectA').addEventListener('change', (e) => {
+        const item = genreTracks[e.target.value];
+        document.getElementById('deckATitle').innerText = item.name;
+        document.getElementById('deckADesc').innerText = item.desc;
+        document.getElementById('bpmVal').innerText = item.bpm;
+      });
+
+      document.getElementById('genreSelectB').addEventListener('change', (e) => {
+        const item = genreTracks[e.target.value];
+        document.getElementById('deckBTitle').innerText = item.name;
+        document.getElementById('deckBDesc').innerText = item.desc;
+      });
+
+      // Master Volume & Crossfader
+      document.getElementById('masterVolume').addEventListener('input', (e) => {
+        if (masterGain) masterGain.gain.value = parseFloat(e.target.value);
+      });
+
+      document.getElementById('crossfader').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (deckAGain && deckBGain) {
+          deckAGain.gain.value = Math.cos(val * 0.5 * Math.PI);
+          deckBGain.gain.value = Math.sin(val * 0.5 * Math.PI);
+        }
+      });
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        const key = e.key.toUpperCase();
+        const padBtn = document.querySelector(`.pad-btn[data-key="${key}"]`);
+        
+        if (padBtn) {
+          padBtn.classList.add('active');
+          triggerSound(key);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        const key = e.key.toUpperCase();
+        const padBtn = document.querySelector(`.pad-btn[data-key="${key}"]`);
+        if (padBtn) {
+          padBtn.classList.remove('active');
+        }
+      });
+
+      // Touchscreen Pad Click Handlers
+      document.querySelectorAll('.pad-btn').forEach((btn) => {
+        const trigger = (e) => {
+          e.preventDefault();
+          const key = btn.getAttribute('data-key');
+          triggerSound(key);
+          btn.classList.add('active');
+          setTimeout(() => btn.classList.remove('active'), 120);
+        };
+        btn.addEventListener('touchstart', trigger);
+        btn.addEventListener('mousedown', trigger);
+      });
+
+    });
+  </script>
+</body>
+</html>
